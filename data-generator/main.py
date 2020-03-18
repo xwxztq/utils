@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backend_bases import MouseButton, Event
 from simulate import simulate_lines
 
-BATCH_SIZE = 100
+BATCH_SIZE = 200
 EPS = 0.1
 
 
@@ -57,12 +57,10 @@ class SimulateLine:
             if not self.line_count:
                 return
             current_line = self.lines[self.line_count -1]
-            ret = simulate_lines(current_line.get_data(), BATCH_SIZE, 5)
+            ret = simulate_lines(current_line.get_data(), BATCH_SIZE, 2, 0, 24)
             # todo 继续测试该部分代码,当前生成数据的效果不好
             self.ax.plot(ret[0], np.transpose(ret[1:]))
-            print(ret)
             fig.canvas.draw()
-
 
     def start_recording(self):
         while len(self.lines) > self.line_count:
