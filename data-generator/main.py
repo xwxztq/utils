@@ -58,7 +58,6 @@ class SimulateLine:
                 return
             current_line = self.lines[self.line_count -1]
             ret = simulate_lines(current_line.get_data(), BATCH_SIZE, 2, 0, 24)
-            # todo 继续测试该部分代码,当前生成数据的效果不好
             self.ax.plot(ret[0], np.transpose(ret[1:]))
             fig.canvas.draw()
 
