@@ -1,2 +1,4 @@
 .idea/
 data-generator/__pycache__/
+*.csv
+data/

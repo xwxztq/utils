@@ -1,8 +1,7 @@
-# draggable rectangle with the animation blit techniques; see
-# http://www.scipy.org/Cookbook/Matplotlib/Animations
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.backend_bases import MouseButton, Event
+from matplotlib.backend_bases import MouseButton
+import csv
 from simulate import simulate_lines
 
 BATCH_SIZE = 200
@@ -60,6 +59,12 @@ class SimulateLine:
             ret = simulate_lines(current_line.get_data(), BATCH_SIZE, 2, 0, 24)
             self.ax.plot(ret[0], np.transpose(ret[1:]))
             fig.canvas.draw()
+            data_length = len(ret)
+            for i in range(1, data_length):
+                self.data_x.append(ret[0])
+                self.data_y.append(ret[i])
+
+
 
     def start_recording(self):
         while len(self.lines) > self.line_count:
@@ -68,8 +73,9 @@ class SimulateLine:
         self.lines.append(self.ax.plot([], [])[0])
         self.line_count += 1
         self.is_recording = True
-        self.data_x.append(self.tmp_x)
-        self.data_y.append(self.tmp_y)
+        # for i in len(self.tmp_x):
+        #     self.data_x.append(self.tmp_x[i])
+        #     self.data_y.append(self.tmp_y[i])
         self.tmp_x = []
         self.tmp_y = []
 
@@ -104,6 +110,22 @@ class SimulateLine:
 
         # elif event.button == MouseButton.MIDDLE:
         fig.canvas.draw()
+
+    def export(self, url):
+        if len(self.tmp_x):
+            self.start_recording()
+        # print(self.tmp_x)
+        # print(self.data_x)
+        with open(url, 'w+') as f:
+            f_csv = csv.writer(f)
+            f_csv.writerow(['name', 'x', 'y'])
+            for i in range(len(self.data_x)):
+                xx = self.data_x[i]
+                yy = self.data_y[i]
+                data_size = len(yy)
+                for j in range(data_size):
+                    f_csv.writerow([i, xx[j], yy[j]])
+
 
 
 fig, ax = plt.subplots(figsize=(14, 7))
@@ -147,4 +169,5 @@ def stop_recording():
 #
 plt.show()
 
-# todo 添加输出数据部分
+
+sl.export("./data.csv")
