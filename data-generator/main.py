@@ -73,6 +73,7 @@ class SimulateLine:
         self.lines.append(self.ax.plot([], [])[0])
         self.line_count += 1
         self.is_recording = True
+        # todo 支持真正的撤销
         # for i in len(self.tmp_x):
         #     self.data_x.append(self.tmp_x[i])
         #     self.data_y.append(self.tmp_y[i])
