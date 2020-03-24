@@ -2,7 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backend_bases import MouseButton
 import csv
+from functools import reduce
+import os
+import logging
 from simulate import simulate_lines
+
+logging.basicConfig(level=logging.DEBUG, format= "%(levelname)s:%(asctime)s:%(funcName)s---->%(message)s")
 
 BATCH_SIZE = 500
 EPS = 0.1
@@ -37,16 +42,16 @@ class SimulateLine:
         )
 
     def leave_axes(self, event):
-        print('Leave axes', event.inaxes)
+        logging.debug(event.inaxes)
         self.stop_recording()
 
     def button_release(self, event):
-        print('Button release: ', event.button)
+        logging.debug(event.button)
         if event.button == MouseButton.LEFT:
             self.stop_recording()
 
     def button_press(self, event):
-        print('Button press:', event.button)
+        logging.debug(event.button)
         if event.button == MouseButton.LEFT:
             self.start_recording()
 
@@ -56,7 +61,7 @@ class SimulateLine:
         elif event.button == MouseButton.MIDDLE:
             if not self.line_count:
                 return
-            current_line = self.lines[self.line_count -1]
+            current_line = self.lines[self.line_count - 1]
             ret = simulate_lines(current_line.get_data(), BATCH_SIZE, CONTROL_RATIO, 0, 24)
             self.ax.plot(ret[0], np.transpose(ret[1:]))
             fig.canvas.draw()
@@ -64,8 +69,6 @@ class SimulateLine:
             for i in range(1, data_length):
                 self.data_x.append(ret[0])
                 self.data_y.append(ret[i])
-
-
 
     def start_recording(self):
         while len(self.lines) > self.line_count:
@@ -85,11 +88,11 @@ class SimulateLine:
         self.is_recording = False
 
     def undo(self):
-        print('undo line', self.is_recording)
+        logging.debug(self.is_recording)
         if self.is_recording:
             return
         if self.line_count >= 0:
-            print('delete the last line')
+            logging.info('delete the last line')
             self.line_count -= 1
             current_line = self.lines[self.line_count]
             current_line.set_xdata([])
@@ -100,9 +103,8 @@ class SimulateLine:
         if self.is_recording and event.button == MouseButton.LEFT:
             x, y = event.xdata, event.ydata
             current_line = self.lines[-1]
-            print(type(current_line))
             [x_array, y_array] = current_line.get_data()
-            print(x_array)
+            logging.info(x_array)
             if len(x_array) and x < x_array[-1] + EPS:
                 return
             x_array = np.append(x_array, x)
@@ -113,12 +115,40 @@ class SimulateLine:
         # elif event.button == MouseButton.MIDDLE:
         fig.canvas.draw()
 
-    def export(self, url):
+    def export(self, url=''):
+        head, tail = os.path.split(url)
+
+        # deal with the remaining data
         if len(self.tmp_x):
             self.start_recording()
-        # print(self.tmp_x)
-        # print(self.data_x)
-        with open(url, 'w+') as f:
+        data_dir = '.\data'
+        file_name = os.listdir(data_dir)
+        logging.debug("These are filenames in data directory")
+        logging.debug(file_name)
+        dir_count = 0
+
+        def is_dir(name):
+            if os.path.isdir(os.path.join(data_dir, name)):
+                return 1
+            return 0
+
+        dir_count = sum(map(is_dir, file_name))
+
+        # 如果目录不存在则新建, 否则按顺序新建
+        if head != '':
+            if os.path.exists(head):
+                pass
+            else:
+                os.mkdir(head)
+        else:
+            head = os.path.join(data_dir, "case" + str(dir_count))
+            os.mkdir(head)
+
+        if tail == '':
+            tail = 'data.csv'
+
+        # export data
+        with open(os.path.join(head, tail), 'w+') as f:
             f_csv = csv.writer(f)
             f_csv.writerow(['name', 'x', 'y'])
             for i in range(len(self.data_x)):
@@ -128,6 +158,22 @@ class SimulateLine:
                 for j in range(data_size):
                     f_csv.writerow([i, xx[j], yy[j]])
 
+        # export ground truth
+        with open(os.path.join(head, 'representative line.csv'), 'w+') as f:
+            f_csv = csv.writer(f)
+            f_csv.writerow(['name', 'x', 'y'])
+            for i in range(len(self.lines)):
+                xx, yy = self.lines[i].get_data()
+                line_size = xx.shape[0]
+                for j in range(line_size):
+                    f_csv.writerow([i, xx[j], yy[j]])
+
+        logging.debug(os.path.join(head, 'figure.png'))
+        # todo 导出图片遇到问题，目前猜测可能是figure关闭之后被销毁，所以无法正常导出
+        # plt.show()
+        # fig.savefig(os.path.join(head,'figure.png'))
+        # print("Data and figure are exported to ", os.path.join(head, tail))
+        print("Data and figure are exported to ", os.path.join(head, tail))
 
 
 fig, ax = plt.subplots(figsize=(14, 7))
@@ -136,8 +182,6 @@ ax.set_ylim(0, 25)
 
 sl = SimulateLine(fig, ax)
 
-
-
 Last_line = None
 Current_line = ax.plot([], [])[0]
 
@@ -145,11 +189,9 @@ arr = []
 
 
 def start_recording(event):
-    print('start recording', event.button)
-    print(event.button == MouseButton.LEFT)
-    print(type(Current_line))
+    logging.debug(event.button)
     arr.append(len(arr))
-    print(arr)
+    logging.info(arr)
     Current_line.set_xdata(arr)
     Current_line.set_ydata(arr)
     fig.canvas.draw()
@@ -158,6 +200,7 @@ def start_recording(event):
 def stop_recording():
     last_line = current_line
     current_line = None
+
 
 # fig.canvas.mpl_connect('button_press_event', start_recording)
 
@@ -171,5 +214,4 @@ def stop_recording():
 #
 plt.show()
 
-
-sl.export("./data.csv")
+sl.export()
