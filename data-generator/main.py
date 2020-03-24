@@ -4,8 +4,9 @@ from matplotlib.backend_bases import MouseButton
 import csv
 from simulate import simulate_lines
 
-BATCH_SIZE = 200
+BATCH_SIZE = 500
 EPS = 0.1
+CONTROL_RATIO = 3
 
 
 class SimulateLine:
@@ -56,7 +57,7 @@ class SimulateLine:
             if not self.line_count:
                 return
             current_line = self.lines[self.line_count -1]
-            ret = simulate_lines(current_line.get_data(), BATCH_SIZE, 2, 0, 24)
+            ret = simulate_lines(current_line.get_data(), BATCH_SIZE, CONTROL_RATIO, 0, 24)
             self.ax.plot(ret[0], np.transpose(ret[1:]))
             fig.canvas.draw()
             data_length = len(ret)
@@ -74,7 +75,7 @@ class SimulateLine:
         self.line_count += 1
         self.is_recording = True
         # todo 支持真正的撤销
-        # for i in len(self.tmp_x):
+        # for i in len(self.tmp_x):G
         #     self.data_x.append(self.tmp_x[i])
         #     self.data_y.append(self.tmp_y[i])
         self.tmp_x = []
