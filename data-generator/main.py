@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backend_bases import MouseButton
 import csv
-from functools import reduce
 import os
 import logging
 from simulate import simulate_lines
@@ -121,7 +120,7 @@ class SimulateLine:
         # deal with the remaining data
         if len(self.tmp_x):
             self.start_recording()
-        data_dir = '.\data'
+        data_dir = './data'
         file_name = os.listdir(data_dir)
         logging.debug("These are filenames in data directory")
         logging.debug(file_name)
@@ -171,7 +170,7 @@ class SimulateLine:
         logging.debug(os.path.join(head, 'figure.png'))
         # todo 导出图片遇到问题，目前猜测可能是figure关闭之后被销毁，所以无法正常导出
         # plt.show()
-        # fig.savefig(os.path.join(head,'figure.png'))
+        fig.savefig(os.path.join(head,'figure.png'))
         # print("Data and figure are exported to ", os.path.join(head, tail))
         print("Data and figure are exported to ", os.path.join(head, tail))
 
