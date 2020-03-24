@@ -1,12 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backend_bases import MouseButton
-import csv
-import os
-import logging
+import csv, os, random, shutil, logging
 from simulate import simulate_lines
 
-logging.basicConfig(level=logging.DEBUG, format= "%(levelname)s:%(asctime)s:%(funcName)s---->%(message)s")
+logging.basicConfig(level=logging.WARN, format= "%(levelname)s:%(asctime)s:%(funcName)s---->%(message)s")
 
 BATCH_SIZE = 500
 EPS = 0.1
@@ -26,6 +24,7 @@ class SimulateLine:
         self.tmp_y = []
         self.fig = figure
         self.ax = axes
+        self.fig_name = str(random.random()) + 'fig.png'
 
         self.fig.canvas.mpl_connect(
             'button_press_event', self.button_press
@@ -64,6 +63,7 @@ class SimulateLine:
             ret = simulate_lines(current_line.get_data(), BATCH_SIZE, CONTROL_RATIO, 0, 24)
             self.ax.plot(ret[0], np.transpose(ret[1:]))
             fig.canvas.draw()
+            fig.savefig(os.path.join('./', self.fig_name))
             data_length = len(ret)
             for i in range(1, data_length):
                 self.data_x.append(ret[0])
@@ -168,9 +168,10 @@ class SimulateLine:
                     f_csv.writerow([i, xx[j], yy[j]])
 
         logging.debug(os.path.join(head, 'figure.png'))
-        # todo 导出图片遇到问题，目前猜测可能是figure关闭之后被销毁，所以无法正常导出
+        shutil.copyfile(os.path.join('./', self.fig_name), os.path.join(head, 'fig.png'))
+        os.remove(os.path.join('./', self.fig_name))
         # plt.show()
-        fig.savefig(os.path.join(head,'figure.png'))
+        # fig.savefig(os.path.join(head,'figure.png'))
         # print("Data and figure are exported to ", os.path.join(head, tail))
         print("Data and figure are exported to ", os.path.join(head, tail))
 

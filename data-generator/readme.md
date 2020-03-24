@@ -11,13 +11,15 @@ python main.py
 
 2. 中键生成
 
+3. 生成的文件会自动放在data目录中，自动创建新的文件夹。命令行中会输出对应文件夹名称
+
 ## 参数
 1. BATCH_SIZE 控制每次生成线的数量
 
 2. CONTROL_RATIO 控制生成的线与原本线的差别程度, ``CONTROL_RATIO``越小与目标折线约相似
 
 
-##todo
+## todo
 
 1. 右键多次撤销
 
