@@ -3,8 +3,10 @@ import matplotlib.pyplot as plt
 from matplotlib.backend_bases import MouseButton
 import csv, os, random, shutil, logging
 from simulate import simulate_lines
+import pathlib
+import click
 
-logging.basicConfig(level=logging.WARN, format= "%(levelname)s:%(asctime)s:%(funcName)s---->%(message)s")
+logging.basicConfig(level=logging.WARN, format="%(levelname)s:%(asctime)s:%(funcName)s---->%(message)s")
 
 BATCH_SIZE = 500
 EPS = 0.1
@@ -50,13 +52,16 @@ class SimulateLine:
 
     def button_press(self, event):
         logging.debug(event.button)
+        # if click the left button, then start recording
         if event.button == MouseButton.LEFT:
             self.start_recording()
 
         elif event.button == MouseButton.RIGHT:
+            # if cilck the right button, then undo last recording
             self.undo()
 
         elif event.button == MouseButton.MIDDLE:
+            # if click the middle button, then generate similar lines
             if not self.line_count:
                 return
             current_line = self.lines[self.line_count - 1]
@@ -120,7 +125,9 @@ class SimulateLine:
         # deal with the remaining data
         if len(self.tmp_x):
             self.start_recording()
-        data_dir = './data'
+        data_dir = pathlib.Path('./data')
+        if not data_dir.exists():
+            data_dir.mkdir()
         file_name = os.listdir(data_dir)
         logging.debug("These are filenames in data directory")
         logging.debug(file_name)
@@ -176,42 +183,33 @@ class SimulateLine:
         print("Data and figure are exported to ", os.path.join(head, tail))
 
 
-fig, ax = plt.subplots(figsize=(14, 7))
-ax.set_xlim(0, 20)
-ax.set_ylim(0, 25)
+if __name__ == "__main__":
+    fig, ax = plt.subplots(figsize=(14, 7))
+    ax.set_xlim(0, 20)
+    ax.set_ylim(0, 25)
 
-sl = SimulateLine(fig, ax)
+    sl = SimulateLine(fig, ax)
 
-Last_line = None
-Current_line = ax.plot([], [])[0]
+    Last_line = None
+    Current_line = ax.plot([], [])[0]
 
-arr = []
-
-
-def start_recording(event):
-    logging.debug(event.button)
-    arr.append(len(arr))
-    logging.info(arr)
-    Current_line.set_xdata(arr)
-    Current_line.set_ydata(arr)
-    fig.canvas.draw()
+    arr = []
 
 
-def stop_recording():
-    last_line = current_line
-    current_line = None
+    def start_recording(event):
+        logging.debug(event.button)
+        arr.append(len(arr))
+        logging.info(arr)
+        Current_line.set_xdata(arr)
+        Current_line.set_ydata(arr)
+        fig.canvas.draw()
 
 
-# fig.canvas.mpl_connect('button_press_event', start_recording)
+    def stop_recording():
+        last_line = current_line
+        current_line = None
 
 
-# rects = ax.bar(range(10), 20 * np.random.rand(10))
-# drs = []
-# for rect in rects:
-#     dr = DraggableRectangle(rect)
-#     dr.connect()
-#     drs.append(dr)
-#
-plt.show()
+    plt.show()
 
-sl.export()
+    sl.export()
