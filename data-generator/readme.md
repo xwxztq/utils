@@ -19,7 +19,9 @@ python main.py
 2. CONTROL_RATIO 控制生成的线与原本线的差别程度, ``CONTROL_RATIO``越小与目标折线约相似
 
 
+<<<<<<< HEAD
 ## TODO
+
 
 - [ ] 右键多次撤销
 - [ ] 线多的时候卡...每次需要重绘太多
