@@ -8,12 +8,17 @@ import matplotlib.pyplot as plt
 
 
 @click.command()
-@click.argument('DATA_PATH')
-def plot_data(data_path):
+@click.option('--data-path', '-d', help='Original Data for Plotting', default='data/data.csv')
+@click.option('--cluster-data-path', '-c', help='Clustering Result with json format', default='data/density.json')
+def plot_data(data_path, cluster_data_path):
     """Load csv data for plotting"""
     data_path = pathlib.Path(data_path)
-    if not data_path.exists():
-        print("ERROR: the file doesn't exist")
+    cluster_data_path = pathlib.Path(cluster_data_path)
+    if not data_path.exists() :
+        print("ERROR: the file%s doesn't exist"%str(data_path))
+        exit(1)
+    if not cluster_data_path.exists() :
+        print("ERROR: the file %s doesn't exist"%str(cluster_data_path))
         exit(1)
 
     mp = dict()
