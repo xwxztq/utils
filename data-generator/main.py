@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.WARN, format="%(levelname)s:%(asctime)s:%(func
 
 BATCH_SIZE = 500
 EPS = 0.1
-CONTROL_RATIO = 3
+CONTROL_RATIO = 0.5
 
 
 class SimulateLine:
@@ -154,7 +154,7 @@ class SimulateLine:
             tail = 'data.csv'
 
         # export data
-        with open(os.path.join(head, tail), 'w+') as f:
+        with open(os.path.join(head, tail), 'w+', newline='') as f:
             f_csv = csv.writer(f)
             f_csv.writerow(['name', 'x', 'y'])
             for i in range(len(self.data_x)):
@@ -165,7 +165,7 @@ class SimulateLine:
                     f_csv.writerow([i, xx[j], yy[j]])
 
         # export ground truth
-        with open(os.path.join(head, 'representative line.csv'), 'w+') as f:
+        with open(os.path.join(head, 'representative line.csv'), 'w+', newline='') as f:
             f_csv = csv.writer(f)
             f_csv.writerow(['name', 'x', 'y'])
             for i in range(len(self.lines)):
