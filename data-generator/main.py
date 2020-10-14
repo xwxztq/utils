@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backend_bases import MouseButton
-import csv, os, random, shutil, logging
+import os, csv, random, shutil, logging
 from simulate import simulate_lines
 import pathlib
 import click
