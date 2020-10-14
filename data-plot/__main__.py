@@ -14,11 +14,11 @@ def plot_data(data_path, cluster_data_path):
     """Load csv data for plotting"""
     data_path = pathlib.Path(data_path)
     cluster_data_path = pathlib.Path(cluster_data_path)
-    if not data_path.exists() :
-        print("ERROR: the file%s doesn't exist"%str(data_path))
+    if not data_path.exists():
+        print("ERROR: the file%s doesn't exist" % str(data_path))
         exit(1)
-    if not cluster_data_path.exists() :
-        print("ERROR: the file %s doesn't exist"%str(cluster_data_path))
+    if not cluster_data_path.exists():
+        print("ERROR: the file %s doesn't exist" % str(cluster_data_path))
         exit(1)
 
     mp = dict()
@@ -55,7 +55,7 @@ def plot_data(data_path, cluster_data_path):
 
         for i in range(len(cluster_res)):
             cluster_num = cluster_res[i]
-            plt.subplot(2, 2, cluster_num+1)
+            plt.subplot(2, 2, cluster_num + 1)
             plt.xlim(0, 20)
             plt.ylim(0, 25)
             if mp.get(str(i)):
