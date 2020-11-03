@@ -58,37 +58,42 @@ def similarity_with_l0(line_a, line_b) -> float:
     return result
 
 
-def is_similar(line_a, line_b, threehold=10):
-    len_a = len(line_a)
-    len_b = len(line_b)
+def is_similar(target_line, original_line, threehold=10):
+    len_a = len(target_line)
+    len_b = len(original_line)
     ind_a = 0
     ind_b = 0
     flag = True
     common_point = False
+    delta = 0
+    target_line_count = 0
 
     while ind_a < len_a and ind_b < len_b:
         lst = None
         cur = None
         compare = None
-        if line_a[ind_a][0] < line_b[ind_b][0]:
+        if target_line[ind_a][0] < original_line[ind_b][0]:
             if ind_b > 0:
-                lst = line_b[ind_b - 1]
-                cur = line_b[ind_b]
-                compare = line_a[ind_a]
+                lst = original_line[ind_b - 1]
+                cur = original_line[ind_b]
+                compare = target_line[ind_a]
+                delta = 1
             ind_a += 1
         else:
             if ind_a > 0:
-                lst = line_a[ind_a - 1]
-                cur = line_a[ind_a]
-                compare = line_b[ind_b]
+                lst = target_line[ind_a - 1]
+                cur = target_line[ind_a]
+                compare = original_line[ind_b]
+                delta = 0
             ind_b += 1
         if lst:
             value = (cur[1] - lst[1]) / (cur[0] - lst[0]) * (compare[0] - lst[0]) + lst[1]
             value = abs(value - compare[1])
             flag = (value < threehold) and flag
             common_point = True
+            target_line_count += delta
 
-    return flag and common_point
+    return flag and common_point and target_line_count / len(target_line) > 0.9
 
 
 def in_box(x, y, line):
@@ -262,7 +267,12 @@ def plot_lines(lines, img_path):
 
 if __name__ == '__main__':
 
-    drawn_path = '../data/draw_data/2020-11-03-160712/'
+    # right part
+    # drawn_path = '../data/draw_data/2020-11-03-144957/'
+    # left part
+    drawn_path = '../data/draw_data/2020-11-03-221237/'
+    # all part
+    # drawn_path = '../data/draw_data/2020-11-03-150010/'
     drawn_lines = get_lines(drawn_path + 'original_lines.csv')
     transformed_drawn_lines = get_lines(drawn_path + 'data.csv')
     original_lines = get_lines('../data/transformed-data-2020-10-20-16-19-11.csv')
