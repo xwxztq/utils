@@ -36,6 +36,7 @@ def draw_pattern(image_path, save_path, data_path, time_field, value_field):
             raise FileNotFoundError("The file %s doesn't exist" % str(data_path))
 
         df = pandas.read_csv(data_path)
+        print(df[time_field].min(), df[time_field].max(), df[value_field].min(), df[value_field].max())
         translation = [df[time_field].min(), df[time_field].max(), df[value_field].min(), df[value_field].max()]
         draw_lines.export(translate_value=translation)
 
