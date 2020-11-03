@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import pathlib
 import pandas
 import numpy as np
+import datetime
 
 
 class DrawLines(object):
@@ -176,5 +177,10 @@ class DrawLines(object):
         df = pandas.DataFrame(np.transpose(self.all_lines))
         df2 = pandas.DataFrame(np.transpose(original_line))
 
-        df.to_csv(file_path, header=["name", "time", "value"], index=False)
-        df2.to_csv(file_path.parent / "original_lines.csv", header=["name", "time", "value"], index=False)
+        parent = file_path.parent
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H%M%S')
+        new_dir = parent / timestamp
+        new_dir.mkdir(parents=True)
+
+        df.to_csv(new_dir / file_path.name, header=["name", "time", "value"], index=False)
+        df2.to_csv(new_dir / "original_lines.csv", header=["name", "time", "value"], index=False)
