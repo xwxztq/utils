@@ -2,6 +2,10 @@
 import csv
 import matplotlib.pyplot as plt
 import datetime
+import logging
+import matplotlib.image as mip
+
+logging.basicConfig(level=logging.INFO)
 
 INF = 1e9
 
@@ -60,6 +64,7 @@ def is_similar(line_a, line_b, threehold=10):
     ind_a = 0
     ind_b = 0
     flag = True
+    common_point = False
 
     while ind_a < len_a and ind_b < len_b:
         lst = None
@@ -81,8 +86,9 @@ def is_similar(line_a, line_b, threehold=10):
             value = (cur[1] - lst[1]) / (cur[0] - lst[0]) * (compare[0] - lst[0]) + lst[1]
             value = abs(value - compare[1])
             flag = (value < threehold) and flag
+            common_point = True
 
-    return flag
+    return flag and common_point
 
 
 def in_box(x, y, line):
@@ -171,18 +177,22 @@ def draw_similarity_relation():
     plt.show()
 
 
-def write_data_to_csv(file_path, data_list: list, header, draw_flag = None):
-
+def write_data_to_csv(file_path, data_list: list, header, draw_flag=None):
     if draw_flag is None:
         draw_flag = [True] * len(data_list)
 
+    cnt = 0
     with open(file_path, 'w', newline='\n') as f_out:
         f_writer = csv.writer(f_out)
         f_writer.writerow(header)
         for i in range(len(data_list)):
             if draw_flag[i]:
+                cnt += 1
                 for row in data_list[i]:
                     f_writer.writerow([i, row[0], row[1]])
+
+    logging.info("%d lines in total, stored in %s" % (cnt, file_path))
+
 
 def delete_lines_similar():
     drawn_lines = get_lines('../data/draw_data/2020-10-23-160830/data.csv')
@@ -219,15 +229,47 @@ def draw_in_box():
         print(cnt)
 
 
-if __name__ == '__main__':
+def find_lines_similar(target, lines):
+    # drawn_lines = get_lines('../data/draw_data/2020-11-03-144957/data.csv')
+    # original_lines = get_lines('../data/transformed-data-2020-10-20-16-19-11.csv')
 
-    drawn_lines = get_lines('../data/draw_data/2020-10-29-211944/data.csv')
-    original_lines = get_lines('../data/transformed-data-2020-10-20-16-19-11.csv')
-
-    arr = [True for i in range(len(original_lines))]
-    for d_line in drawn_lines:
-        for i, o_line in zip(range(len(original_lines)), original_lines):
+    arr = [True for i in range(len(lines))]
+    for d_line in target:
+        for i, o_line in zip(range(len(lines)), lines):
             if not is_similar(d_line, o_line, 3):
                 arr[i] = False
 
-    write_data_to_csv('../data/data-is-similar.csv', original_lines, ['name', 'time', 'value'], arr)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    write_data_to_csv('../data/data-is-similar-%s.csv' % timestamp, lines, ['name', 'time', 'value'], arr)
+
+
+def plot_lines(lines, img_path):
+    # draw_lines = get_lines('../data/draw_data/2020-11-03-150010/original_lines.csv')
+    # image_path = '../data/images/stock_data.png'
+    fig, ax = plt.subplots()
+
+    img = mip.imread(img_path)
+    ax.imshow(img)
+    for line in lines:
+        x = []
+        y = []
+        for point in line:
+            x.append(point[0])
+            y.append(point[1])
+        ax.plot(x, y)
+    plt.show()
+
+
+if __name__ == '__main__':
+
+    drawn_path = '../data/draw_data/2020-11-03-160712/'
+    drawn_lines = get_lines(drawn_path + 'original_lines.csv')
+    transformed_drawn_lines = get_lines(drawn_path + 'data.csv')
+    original_lines = get_lines('../data/transformed-data-2020-10-20-16-19-11.csv')
+    image_path = '../data/images/stock_data.png'
+    # drawn_lines = get_lines('../data/draw_data/2020-11-03-144957/data.csv')
+    # original_lines = get_lines('../data/transformed-data-2020-10-20-16-19-11.csv')
+
+    plot_lines(drawn_lines, image_path)
+    find_lines_similar(transformed_drawn_lines, original_lines)
+    # find_lines_similar()
