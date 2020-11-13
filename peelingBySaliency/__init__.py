@@ -1,0 +1,1 @@
+from peelingBySaliency.__main__ import main
