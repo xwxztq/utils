@@ -4,10 +4,14 @@ import matplotlib.pyplot as plt
 import datetime
 import logging
 import matplotlib.image as mip
+import pathlib
 
 logging.basicConfig(level=logging.INFO)
 
 INF = 1e9
+similarity_threshold = 2
+line_percentage = 0.9
+which_part = ""
 
 
 def similarity_with_l0(line_a, line_b) -> float:
@@ -58,7 +62,7 @@ def similarity_with_l0(line_a, line_b) -> float:
     return result
 
 
-def is_similar(target_line, original_line, threehold=10):
+def is_similar(target_line, original_line, threshold=10):
     len_a = len(target_line)
     len_b = len(original_line)
     ind_a = 0
@@ -89,11 +93,11 @@ def is_similar(target_line, original_line, threehold=10):
         if lst:
             value = (cur[1] - lst[1]) / (cur[0] - lst[0]) * (compare[0] - lst[0]) + lst[1]
             value = abs(value - compare[1])
-            flag = (value < threehold) and flag
+            flag = (value < threshold) and flag
             common_point = True
             target_line_count += delta
 
-    return flag and common_point and target_line_count / len(target_line) > 0.9
+    return flag and common_point and target_line_count / len(target_line) > line_percentage
 
 
 def in_box(x, y, line):
@@ -199,9 +203,21 @@ def write_data_to_csv(file_path, data_list: list, header, draw_flag=None):
     logging.info("%d lines in total, stored in %s" % (cnt, file_path))
 
 
-def delete_lines_similar():
-    drawn_lines = get_lines('../data/draw_data/2020-10-23-160830/data.csv')
-    original_lines = get_lines('../data/transformed-data-2020-10-20-16-19-11.csv')
+def delete_lines_similar(target_path, original_path, decoration_name):
+    # drawn_lines = get_lines('../data/draw_data/2020-10-23-160830/data.csv')
+    # original_lines = get_lines('../data/transformed-data-2020-10-20-16-19-11.csv')
+    timestamp = get_timestamp_str()
+    save_root = '../data/lines_is_not_similar'
+    save_root = pathlib.Path(save_root)
+
+    save_path = save_root / decoration_name
+    if save_path.exists():
+        save_path = save_root / (decoration_name + timestamp)
+    save_path.mkdir(parents=True)
+    save_path = save_path / 'data.csv'
+
+    drawn_lines = get_lines(target_path)
+    original_lines = get_lines(original_path)
 
     arr = [True for i in range(len(original_lines))]
     for d_line in drawn_lines:
@@ -209,11 +225,10 @@ def delete_lines_similar():
             if is_similar(d_line, o_line):
                 arr[i] = False
 
-    write_data_to_csv('../data/data-not-similar.csv', original_lines, ['name', 'time', 'value'], arr)
+    write_data_to_csv(save_path, original_lines, ['name', 'time', 'value'], arr)
 
 
 def draw_in_box():
-
     original_lines = get_lines('../data/transformed-data-2020-10-20-16-19-11.csv')
 
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
@@ -241,11 +256,17 @@ def find_lines_similar(target, lines):
     arr = [True for i in range(len(lines))]
     for d_line in target:
         for i, o_line in zip(range(len(lines)), lines):
-            if not is_similar(d_line, o_line, 3):
+            if not is_similar(d_line, o_line, similarity_threshold):
                 arr[i] = False
 
+    cnt = 0
+    for i in range(len(lines)):
+        if arr[i]:
+            cnt += 1
+
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    write_data_to_csv('../data/data-is-similar-%s.csv' % timestamp, lines, ['name', 'time', 'value'], arr)
+    write_data_to_csv('../data/data-is-similar-%s-part-%s-threshold-%d-percentage-%.2f-lineCount-%d.csv' % (
+        timestamp, which_part, similarity_threshold, line_percentage, cnt), lines, ['name', 'time', 'value'], arr)
 
 
 def plot_lines(lines, img_path):
@@ -265,14 +286,19 @@ def plot_lines(lines, img_path):
     plt.show()
 
 
-if __name__ == '__main__':
+def save_lines_is_similar():
+    similarity_threshold = 2
+    line_percentage = 0.9
 
     # right part
+    # which_part = 'RIGHT'
     # drawn_path = '../data/draw_data/2020-11-03-144957/'
     # left part
-    drawn_path = '../data/draw_data/2020-11-03-221237/'
+    # which_part = 'LEFT'
+    # drawn_path = '../data/draw_data/2020-11-03-221237/'
     # all part
-    # drawn_path = '../data/draw_data/2020-11-03-150010/'
+    which_part = 'ALL'
+    drawn_path = '../data/draw_data/2020-11-03-150010/'
     drawn_lines = get_lines(drawn_path + 'original_lines.csv')
     transformed_drawn_lines = get_lines(drawn_path + 'data.csv')
     original_lines = get_lines('../data/transformed-data-2020-10-20-16-19-11.csv')
@@ -283,3 +309,17 @@ if __name__ == '__main__':
     plot_lines(drawn_lines, image_path)
     find_lines_similar(transformed_drawn_lines, original_lines)
     # find_lines_similar()
+
+
+def get_timestamp_str():
+    return datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+
+
+if __name__ == '__main__':
+    similarity_threshold = 5
+    delete_lines_similar('../data/draw_data/2020-11-05-203830/data.csv',
+                         '../data/transformed-data-2020-10-20-16-19-11.csv', 'delete_first_pattern')
+
+    delete_lines_similar('../data/draw_data/2020-11-05-203923/data.csv',
+                         '../data/lines_is_not_similar/delete_first_pattern/data.csv',
+                         'delete_second_pattern')
